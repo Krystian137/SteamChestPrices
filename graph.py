@@ -32,4 +32,4 @@ def plot_prices(case_name):
     plt.show()
 
 # Rysowanie wykresu dla "Gamma%20Case"
-plot_prices(cases)
+plot_prices("Gamma%20Case")
