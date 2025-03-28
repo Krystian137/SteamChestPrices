@@ -20,8 +20,10 @@ def home():
 
 @main.route("/chest_info/<string:case_code>")
 def chest_info(case_code):
-    chest_info = cases.get(case_code)
-    return render_template('chest_info.html', chest_info=chest_info, case_code=case_code)
+    for chest_name, chest_info in cases.items():
+        if chest_info["code"] == case_code:
+            return render_template('chest_info.html', chest_info=chest_info, case_code=case_code, chest_name=chest_name)
+    return "Nie znaleziono skrzynki.", 404
 
 
 @main.route("/get_price_history/<case_code>")
@@ -36,8 +38,9 @@ def get_price_history(case_code):
                 if case_code in data:
                     return jsonify(data[case_code])
                 else:
-                    return jsonify([])  # Pusta lista, jeśli nie ma danych
-
-        return jsonify([])  # Jeśli kod nie istnieje
+                    return jsonify([])
+        return jsonify([])
     except Exception as e:
+        print("Błąd:", str(e))
         return jsonify({"error": str(e)})
+

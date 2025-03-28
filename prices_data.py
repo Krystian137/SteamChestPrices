@@ -170,63 +170,33 @@ def save_data(data):
         json.dump(data, file, indent=4, ensure_ascii=False)
 
 
-#def update_prices():
-#    data = load_data()
-#    now = datetime.datetime.now().strftime("%b %d %Y %H: +0")  # Timestamp w formacie, który masz
-#
-#    for case in cases:
-#        response = requests.get(PRICE_URL + case)
-#        if response.status_code == 200:
-#            result = response.json()
-#            if "prices" in result:
-#                price = result["prices"][0][1]  # Cena (float)
-#                transactions = result["prices"][0][2]  # Liczba transakcji (lub liczba przedmiotów)
-#
-#                # Dodanie do pliku JSON
-#                if case not in data:
-#                    data[case] = []
-#
-#                data[case].append([now, price, transactions])
-#                print(f"Zaktualizowano: {case} -> {price} PLN")
-#
-#    save_data(data)
-#    print("Aktualizacja zakończona!")
+def update_prices(data):
+    prices = data
+    for case_name, case_data in cases.items():
+        market_code = case_data['code']
+        url = PRICE_URL + market_code
+        print(f"Przetwarzam skrzynkę: {case_name} ({market_code})")
+        try:
+            response = requests.get(url)
+            data = response.json()
+            if data and 'lowest_price' in data:
+                lowest_price = data['lowest_price']
+                cleaned_price = lowest_price.replace('zł', '').replace(',', '.').strip()
+                today = time.strftime("%b %d %Y %H: +0")
+                prices[market_code].append([today, float(cleaned_price)])
+                print(f"Zaktualizowano {case_name}: {cleaned_price} zł")
+            else:
+                print(f"Nie znaleziono ceny dla {case_name}.")
+        except Exception as e:
+            print(f"Błąd podczas aktualizacji {case_name}: {e}")
 
+        time.sleep(3)
 
-# Wywołanie funkcji aktualizującej ceny
-#update_prices()
+    with open('prices.json', 'w') as file:
+        json.dump(prices, file, indent=4)
 
-#def current_price():
-#    for i, (case_name, case_info) in enumerate(cases.items()):
-#        # Generowanie URL
-#        url = PRICE_URL + case_info['code']
-#        print(f"Zapytanie URL: {url}")  # Debugowanie URL
-#
-#        # Pobranie ceny z API
-#        response = requests.get(url, cookies=cookies)
-#
-#        if response.status_code == 200:
-#            result = response.json()  # Parsowanie odpowiedzi JSON
-#            print(f"Odpowiedź API: {result}")  # Debugowanie odpowiedzi
-#            if 'lowest_price' in result:
-#                case_info['price'] = result['lowest_price']  # Dodanie ceny do danych skrzynki
-#            else:
-#                case_info['price'] = 'Brak ceny'  # Jeśli nie ma ceny
-#        else:
-#            case_info['price'] = 'Błąd pobierania ceny'  # Jeśli wystąpił problem z API
-#
-#        # Jeśli zapytano o więcej niż 20 skrzyń, wprowadź opóźnienie
-#        if (i + 1) % 20 == 0:  # Co 20 zapytań
-#            print("Osiągnięto limit zapytań. Czekam 60 sekund...")
-#            time.sleep(60)  # Pauza 60 sekund
+    print("Aktualizacja pliku prices.json zakończona.")
 
-
-# Wywołanie funkcji i sprawdzenie wyników
-#current_price()
-
-# Drukowanie wyników dla każdej skrzynki
-#for case_name, case_info in cases.items():
-#    print(f"{case_name}: {case_info.get('price', 'Brak ceny')}")
 
 def get_latest_price_from_file(case_code, filename="prices.json"):
     with open(filename, 'r') as f:
@@ -235,10 +205,3 @@ def get_latest_price_from_file(case_code, filename="prices.json"):
         latest_price = data[case_code][-1][1]
         return latest_price
     return None
-
-#for chest_name, chest_info in cases.items():
-#    case_code = chest_info["code"]
-#    latest_price = get_latest_price_from_file(case_code)
-#    print(f"Najnowsza cena dla {chest_name}: {latest_price:.2f} zł")
-
-
