@@ -1,7 +1,10 @@
 from flask import Flask
+from flask_bootstrap import Bootstrap
 
 def create_app():
     app = Flask(__name__)
+
+    Bootstrap(app)
 
     # Załaduj konfigurację (możesz dodać plik config.py, jeśli masz)
     app.config.from_object('config.Config')
