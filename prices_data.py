@@ -227,3 +227,18 @@ def save_data(data):
 # Drukowanie wyników dla każdej skrzynki
 #for case_name, case_info in cases.items():
 #    print(f"{case_name}: {case_info.get('price', 'Brak ceny')}")
+
+def get_latest_price_from_file(case_code, filename="prices.json"):
+    with open(filename, 'r') as f:
+        data = json.load(f)
+    if case_code in data:
+        latest_price = data[case_code][-1][1]
+        return latest_price
+    return None
+
+#for chest_name, chest_info in cases.items():
+#    case_code = chest_info["code"]
+#    latest_price = get_latest_price_from_file(case_code)
+#    print(f"Najnowsza cena dla {chest_name}: {latest_price:.2f} zł")
+
+
