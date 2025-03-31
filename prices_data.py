@@ -195,6 +195,9 @@ def update_prices(data):
     with open('prices.json', 'w') as file:
         json.dump(prices, file, indent=4)
 
+    with open('latest_prices.json', 'w') as file:
+        json.dump(prices, file, indent=4)
+
     print("Aktualizacja pliku prices.json zakończona.")
 
 
