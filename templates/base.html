@@ -20,11 +20,22 @@
         <div class="collapse navbar-collapse" id="navbarCollapse">
           <ul class="navbar-nav me-auto">
             <li class="nav-item active">
-              <a class="nav-link" href="{{ url_for('main.home') }}">Strona główna</a>
+                <a class="nav-link" href="{{ url_for('main.home') }}">Strona główna</a>
             </li>
-              <li class="nav-item active">
-              <a class="nav-link" href="{{ url_for('main.calculate') }}">Moje dane</a>
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ url_for('main.calculate') }}">Moje dane</a>
             </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ url_for('main.login') }}">Zaloguj</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ url_for('main.register') }}">Rejestracja</a>
+            </li>
+            {% if current_user.is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.logout') }}">Log Out</a>
+            </li>
+            {% endif %}
           </ul>
           <form class="d-flex">
             <input class="form-control me-2" type="text" placeholder="Search" aria-label="Search">

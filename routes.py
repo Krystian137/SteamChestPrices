@@ -1,11 +1,55 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, flash, redirect, url_for
 import json
 from prices_data import cases, get_latest_price_from_file, load_data
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify
+from flask_login import login_user, login_required, current_user, logout_user
+from models import db, User
 
 main = Blueprint('main', __name__)
 
 FILENAME = "prices.json"
+
+@main.route('/login', methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        user = User.query.filter_by(name=username).first()
+
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for("main.index"))
+        else:
+            flash("Nieprawidłowy login lub hasło", "danger")
+    return render_template("login.html")
+
+
+@main.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("main.login"))
+
+
+@main.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        if User.query.filter_by(username=username).first():
+            flash("Nazwa użytkownika już istnieje")
+            return redirect(url_for('main.register'))
+
+        new_user = User(username=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
+        db.session.add(new_user)
+        db.session.commit()
+
+        return redirect(url_for('main.login'))
+
+    return render_template('register.html')
+
 
 @main.route('/')
 def home():
