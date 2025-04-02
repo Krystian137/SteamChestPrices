@@ -2,20 +2,21 @@
 
 {% block content %}
 
-<div class="d-flex align-items-center justify-content-center vh-100">
+<div class="d-flex align-items-center justify-content-center">
     <main class="form-signin border rounded black-olive p-4 shadow">
-      <form>
-        <h1 class="h3 mb-3 fw-normal text-center">Logowanie</h1>
-        <div class="form-floating mb-3 text-black">
-          <input type="text" class="form-control" id="floatingInput" placeholder="login">
-          <label for="floatingInput">Login</label>
-        </div>
-        <div class="form-floating mb-3 text-black">
-          <input type="password" class="form-control" id="floatingPassword" placeholder="Hasło">
-          <label for="floatingPassword">Hasło</label>
-        </div>
-        <button class="btn btn-primary w-100 py-2" type="submit">Zaloguj się</button>
-      </form>
+      <form method="POST">
+  <h1 class="h3 mb-3 fw-normal text-center">Logowanie</h1>
+  <div class="form-floating mb-3 text-black">
+    <input type="text" class="form-control" id="floatingInput" placeholder="login" name="name" value="{{ request.form.name }}">
+    <label for="floatingInput">Login</label>
+  </div>
+  <div class="form-floating mb-3 text-black">
+    <input type="password" class="form-control" id="floatingPassword" placeholder="Hasło" name="password" value="{{ request.form.password }}">
+    <label for="floatingPassword">Hasło</label>
+  </div>
+  <button class="btn btn-primary w-100 py-2" type="submit">Zaloguj się</button>
+</form>
+
     </main>
   </div>
 

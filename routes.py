@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import json
-from prices_data import cases, get_latest_price_from_file, load_data
+from prices_data import cases, load_data
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify
 from flask_login import login_user, login_required, current_user, logout_user
@@ -10,18 +10,20 @@ main = Blueprint('main', __name__)
 
 FILENAME = "prices.json"
 
+
 @main.route('/login', methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username"]
+        name = request.form["name"]
         password = request.form["password"]
-        user = User.query.filter_by(name=username).first()
+        user = User.query.filter_by(name=name).first()
 
         if user and check_password_hash(user.password, password):
             login_user(user)
             return redirect(url_for("main.index"))
         else:
             flash("Nieprawidłowy login lub hasło", "danger")
+
     return render_template("login.html")
 
 
@@ -35,31 +37,45 @@ def logout():
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        name = request.form.get('name')
+        password = request.form.get('password')
 
-        if User.query.filter_by(username=username).first():
-            flash("Nazwa użytkownika już istnieje")
+        if not name or not password:
+            flash("Wprowadź nazwę użytkownika i hasło", "danger")
             return redirect(url_for('main.register'))
 
-        new_user = User(username=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
+        if User.query.filter_by(name=name).first():
+            flash("Nazwa użytkownika już istnieje", "danger")
+            return redirect(url_for('main.register'))
+
+        new_user = User(name=name, password=generate_password_hash(password, method='pbkdf2:sha256'))
         db.session.add(new_user)
         db.session.commit()
 
-        return redirect(url_for('main.login'))
+        login_user(new_user)
+        flash("Konto zostało założone i zalogowane", "success")
+        return redirect(url_for('main.home'))  # Przekierowanie po rejestracji
 
     return render_template('register.html')
 
 
 @main.route('/')
 def home():
+    try:
+        # Wczytujemy najnowsze ceny z pliku latest_prices.json
+        with open("latest_prices.json", "r") as f:
+            latest_prices = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        latest_prices = {}
+
+    # Przypisujemy ceny do skrzyń
     for chest_name, chest_info in cases.items():
-        case_code = chest_info["code"]
-        latest_price = get_latest_price_from_file(case_code)
+        latest_price = latest_prices.get(chest_name)
         if latest_price is not None:
             chest_info['latest_price'] = f"{latest_price:.2f} zł"
         else:
             chest_info['latest_price'] = "Brak danych"
+
     return render_template('home.html', cases=cases)
 
 

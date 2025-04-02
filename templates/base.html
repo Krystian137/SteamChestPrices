@@ -22,6 +22,11 @@
             <li class="nav-item active">
                 <a class="nav-link" href="{{ url_for('main.home') }}">Strona główna</a>
             </li>
+              {% if current_user.is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.logout') }}">Wyloguj się</a>
+            </li>
+            {% else %}
             <li class="nav-item active">
                 <a class="nav-link" href="{{ url_for('main.calculate') }}">Moje dane</a>
             </li>
@@ -31,11 +36,7 @@
             <li class="nav-item active">
                 <a class="nav-link" href="{{ url_for('main.register') }}">Rejestracja</a>
             </li>
-            {% if current_user.is_authenticated %}
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('main.logout') }}">Log Out</a>
-            </li>
-            {% endif %}
+              {% endif %}
           </ul>
           <form class="d-flex">
             <input class="form-control me-2" type="text" placeholder="Search" aria-label="Search">
@@ -46,6 +47,20 @@
     </nav>
 
     <div class="container mt-5">
+
+        <div class="container mt-3 py-5">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
         {% block content %}{% endblock %}
     </div>
 

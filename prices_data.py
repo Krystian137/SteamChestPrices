@@ -201,10 +201,29 @@ def update_prices(data):
     print("Aktualizacja pliku prices.json zakończona.")
 
 
-def get_latest_price_from_file(case_code, filename="prices.json"):
-    with open(filename, 'r') as f:
-        data = json.load(f)
-    if case_code in data:
-        latest_price = data[case_code][-1][1]
-        return latest_price
-    return None
+def get_latest_prices_for_all_cases(cases, prices_file="prices.json", output_file="latest_prices.json"):
+    try:
+        with open(prices_file, 'r') as f:
+            prices_data = json.load(f)
+
+        latest_prices = {}
+
+        for case_name, case_info in cases.items():
+            case_code = case_info["code"]  # Pobieramy kod skrzyni
+
+            # Pobieramy najnowszą cenę (jeśli istnieje)
+            if case_code in prices_data and prices_data[case_code]:
+                latest_price = prices_data[case_code][-1][1]  # Ostatnia wartość
+                latest_prices[case_name] = latest_price  # Dodajemy do wyniku
+            else:
+                latest_prices[case_name] = None  # Jeśli brak danych, ustawiamy None
+
+        # Zapisujemy najnowsze ceny do latest_prices.json
+        with open(output_file, 'w') as f:
+            json.dump(latest_prices, f, indent=4)
+
+        print("✅ Zaktualizowano latest_prices.json!")
+
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"❌ Błąd: {e}")
+
