@@ -20,7 +20,7 @@ def login():
 
         if user and check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for("main.index"))
+            return redirect(url_for("main.home"))
         else:
             flash("Nieprawidłowy login lub hasło", "danger")
 
@@ -153,6 +153,12 @@ def calculate():
         total_value=total_value,
         form_data=form_data  # Przekazanie danych do szablonu
     )
+
+
+@main.route("/user_chests", methods=['GET', 'POST'])
+def user_chests():
+    prices_data = load_data()
+    return render_template("user_chests.html")
 
 
 
