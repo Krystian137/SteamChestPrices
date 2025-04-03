@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import json
-from prices_data import cases, load_data
+from prices_data import cases, load_data, load_latest_prices
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify
 from flask_login import login_user, login_required, current_user, logout_user
-from models import db, User
+from models import db, User, UserCase
 
 main = Blueprint('main', __name__)
 
@@ -119,7 +119,6 @@ def get_price_history(case_code):
 def calculate():
     prices_data = load_data()
 
-    # Aktualizacja danych o cenach dla skrzyń
     for chest_name, chest_info in cases.items():
         case_code = chest_info["code"]
         if case_code in prices_data:
@@ -135,12 +134,10 @@ def calculate():
         case_codes = request.form.getlist('case_code[]')
         quantities = request.form.getlist('quantity[]')
 
-        # Przypisanie danych do form_data
         form_data['case_code'] = case_codes
         form_data['quantity'] = quantities
 
         total_value = 0
-        # Obliczanie wartości dla każdej skrzyni
         for case_code, quantity in zip(case_codes, quantities):
             for chest_name, chest_info in cases.items():
                 if chest_info["code"] == case_code:
@@ -151,15 +148,83 @@ def calculate():
         'calculate.html',
         cases=cases,
         total_value=total_value,
-        form_data=form_data  # Przekazanie danych do szablonu
+        form_data=form_data
     )
 
 
 @main.route("/user_chests", methods=['GET', 'POST'])
+@login_required
 def user_chests():
-    prices_data = load_data()
-    return render_template("user_chests.html")
+    # Pobierz najnowsze ceny skrzyń
+    latest_prices = load_latest_prices()  # Pobieramy najnowsze ceny
+
+    # Pobierz dane użytkownika
+    user_cases = UserCase.query.filter_by(user_id=current_user.id).all()
+
+    # Przypisanie najnowszej ceny do każdej skrzyni
+    for case in user_cases:
+        case_name = case.case_code.replace("%20", " ")  # Dekodowanie nazwy
+        case.latest_price = latest_prices.get(case_name, 0)
+
+    # Obliczenie łącznej wartości wszystkich skrzyń
+    total_value = sum(case.quantity * case.latest_price for case in user_cases)
+
+    # Obsługa dodawania skrzyń przez POST
+    if request.method == 'POST':
+        case_codes = request.form.getlist("case_code[]")
+        quantities = request.form.getlist("quantity[]")
+
+        for case_code, quantity in zip(case_codes, quantities):
+            if case_code and quantity:
+                quantity = int(quantity)  # Konwertujemy ilość na liczbę
+                existing_case = UserCase.query.filter_by(user_id=current_user.id, case_code=case_code).first()
+
+                # Jeśli skrzynia już istnieje, zwiększ ilość
+                if existing_case:
+                    existing_case.quantity += quantity
+                else:
+                    # Tworzenie nowej skrzyni
+                    new_case = UserCase(user_id=current_user.id, case_code=case_code, quantity=quantity)
+                    db.session.add(new_case)
+
+        db.session.commit()
+        flash("Skrzynie zostały dodane!", "success")
+        return redirect(url_for('main.user_chests'))
+
+    # Renderowanie strony z tabelą skrzyń i formularzem
+    return render_template("user_chests.html",
+                           cases=cases,
+                           user_cases=user_cases,
+                           total_value=total_value,
+                           latest_prices=latest_prices)
 
 
+@main.route("/user_chests/edit/<int:case_id>", methods=['POST'])
+@login_required
+def edit_chest(case_id):
+    case = UserCase.query.get_or_404(case_id)
+    if case.user_id != current_user.id:
+        flash("Brak dostępu!", "danger")
+        return redirect(url_for('main.user_chests'))
 
+    new_quantity = request.form.get("new_quantity")
+    if new_quantity and int(new_quantity) > 0:
+        case.quantity = int(new_quantity)
+        db.session.commit()
+        flash("Zaktualizowano ilość!", "success")
+    return redirect(url_for('main.user_chests'))
+
+
+@main.route("/user_chests/delete/<int:case_id>", methods=['POST'])
+@login_required
+def delete_chest(case_id):
+    case = UserCase.query.get_or_404(case_id)
+    if case.user_id != current_user.id:
+        flash("Brak dostępu!", "danger")
+        return redirect(url_for('main.user_chests'))
+
+    db.session.delete(case)
+    db.session.commit()
+    flash("Skrzynia usunięta!", "success")
+    return redirect(url_for('main.user_chests'))
 

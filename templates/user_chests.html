@@ -1,15 +1,62 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="dropdown olive">
-        <ul class="dropdown-menu olive" aria-labelledby="time">
-            <li><a class="dropdown-item text-light" href="#">Weekly</a></li>
-            <li><a class="dropdown-item text-light" href="#">Monthly</a></li>
-            <li><a class="dropdown-item text-light" href="#">Yearly</a></li>
-            <li><a class="dropdown-item text-light" href="#">Total</a></li>
-        </ul>
-    </div>
+
+<div class="container mt-3 py-5">
+    <h2 class="mb-6">Dodaj skrzynie</h2>
+    <form action="{{ url_for('main.user_chests') }}" method="POST">
+        <div id="fields-container" class="row">
+            {% if form_data and form_data['case_code'] %}
+                {% for i in range(form_data['case_code']|length) %}
+                    {% include 'user_case_field.html' %}
+                {% endfor %}
+            {% else %}
+                {% include 'user_case_field.html' %}
+            {% endif %}
+        </div>
+
+        <button type="button" class="btn btn-primary mt-4" id="add_button">Dodaj do tabeli</button>
+        <button type="button" class="btn btn-primary mt-4" id="one_more_chest">Jeszcze jedna</button>
+    </form>
 </div>
+
+<h2>Twoje Skrzynie</h2>
+<table class="table table-dark table-striped table-sm">
+    <thead>
+        <tr>
+            <th>Nazwa skrzyni</th>
+            <th>Ilość</th>
+            <th>Wartość jednostkowa</th>
+            <th>Łączna wartość</th>
+            <th>Akcje</th>
+        </tr>
+    </thead>
+    <tbody id="priceTableBody">
+        {% for case in user_cases %}
+        <tr>
+            <td>{{ cases[case.case_code]['name'] }}</td>
+            <td>{{ case.quantity }}</td>
+            <td>{{ case_prices[case.case_code]|round(2) }} zł</td>
+            <td>{{ (case.quantity * case_prices[case.case_code])|round(2) }} zł</td>
+            <td>
+                <form action="{{ url_for('main.edit_chest', case_id=case.id) }}" method="POST" class="d-inline">
+                    <input type="number" name="new_quantity" value="{{ case.quantity }}" min="1" required>
+                    <button type="submit" class="btn btn-warning btn-sm">Edytuj</button>
+                </form>
+                <form action="{{ url_for('main.delete_chest', case_id=case.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger btn-sm">Usuń</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Łączna wartość: {{ total_value|round(2) }} zł</h3>
+
+<script>
+    var casesData = {{ cases | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/users_chests.js') }}"></script>
 
 {% endblock %}

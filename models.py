@@ -17,7 +17,8 @@ class User(UserMixin, db.Model):
 
 class UserCase(db.Model):
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     case_code = Column(String(100))
     quantity = Column(Integer)
+    latest_price = Column(db.Float, nullable=True)  # Dodane pole
 

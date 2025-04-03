@@ -7,6 +7,7 @@ import urllib.parse
 #https://github.com/Revadike/InternalSteamWebAPI/wiki
 
 FILENAME = "prices.json"
+LATEST_PRICES_FILE = "latest_prices.json"
 
 cookies = {
     "sessionid": "309e5d37a4ba997967ef0b60",
@@ -158,6 +159,13 @@ cases = {
         "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXU5A1PIYQNqhpOSV-fRPasw8rsUFJ5KBFZv668FFYynaSdJGhE74y0wNWIw_OlNuvXkDpSuZQmi--SrN-h3gey-Uo6YWmlIoCLMlhplhFFvwI/360fx360f"
     }
 }
+
+def load_latest_prices():
+    if os.path.exists(LATEST_PRICES_FILE):
+        with open(LATEST_PRICES_FILE, "r", encoding="utf-8") as file:
+            return json.load(file)
+    return {}
+
 
 def load_data():
     if os.path.exists(FILENAME):
