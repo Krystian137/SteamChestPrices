@@ -9,11 +9,6 @@ import urllib.parse
 FILENAME = "prices.json"
 LATEST_PRICES_FILE = "latest_prices.json"
 
-cookies = {
-    "sessionid": "309e5d37a4ba997967ef0b60",
-    "steamLoginSecure": "76561199839664078%7C%7CeyAidHlwIjogIkpXVCIsICJhbGciOiAiRWREU0EiIH0.eyAiaXNzIjogInI6MDAwMV8yNjBDRDBFQl9CM0M3MiIsICJzdWIiOiAiNzY1NjExOTk4Mzk2NjQwNzgiLCAiYXVkIjogWyAid2ViOnN0b3JlIiBdLCAiZXhwIjogMTc0MzI0Njg1OSwgIm5iZiI6IDE3MzQ1MTk5NzYsICJpYXQiOiAxNzQzMTU5OTc2LCAianRpIjogIjAwMDFfMjYwQ0QwRUJfQjNDQjQiLCAib2F0IjogMTc0MzE1OTk3NSwgInJ0X2V4cCI6IDE3NDU3MzA4NjgsICJwZXIiOiAwLCAiaXBfc3ViamVjdCI6ICI4OS4xNzQuMTIuMTMxIiwgImlwX2NvbmZpcm1lciI6ICI4OS4xNzQuMTIuMTMxIiB9.Rx-NzwbYVNg6r7ZNR-mBl1KIA1UekCj2_eOxLP5SBkWRg_JALx_6ySBF49vHzsEqOvRZcr_OhOb_xX6iz_xUDw"
-}
-
 PRICE_URL = "http://steamcommunity.com/market/priceoverview/?appid=730&currency=6&market_hash_name="
 PRICE_HISTORY_URL = "https://steamcommunity.com/market/pricehistory?appid=730&market_hash_name="
 
