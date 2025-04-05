@@ -178,6 +178,31 @@ def save_data(data):
         json.dump(data, file, indent=4, ensure_ascii=False)
 
 
+def get_latest_prices_for_all_cases(cases, prices_file="prices.json", output_file="latest_prices.json"):
+    try:
+        with open(prices_file, 'r') as f:
+            prices_data = json.load(f)
+
+        latest_prices = {}
+
+        for case_name, case_info in cases.items():
+            case_code = case_info["code"]
+
+            if case_code in prices_data and prices_data[case_code]:
+                latest_price = prices_data[case_code][-1][1]
+                latest_prices[case_name] = latest_price
+            else:
+                latest_prices[case_name] = None
+
+        with open(output_file, 'w') as f:
+            json.dump(latest_prices, f, indent=4)
+
+        print("✅ Zaktualizowano latest_prices.json!")
+
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"❌ Błąd: {e}")
+
+
 def update_prices(data):
     prices = data
     for case_name, case_data in cases.items():
@@ -205,30 +230,5 @@ def update_prices(data):
 
     print("Aktualizacja pliku prices.json zakończona.")
 
-
-def get_latest_prices_for_all_cases(cases, prices_file="prices.json", output_file="latest_prices.json"):
-    try:
-        with open(prices_file, 'r') as f:
-            prices_data = json.load(f)
-
-        latest_prices = {}
-
-        for case_name, case_info in cases.items():
-            case_code = case_info["code"]  # Pobieramy kod skrzyni
-
-            # Pobieramy najnowszą cenę (jeśli istnieje)
-            if case_code in prices_data and prices_data[case_code]:
-                latest_price = prices_data[case_code][-1][1]  # Ostatnia wartość
-                latest_prices[case_name] = latest_price  # Dodajemy do wyniku
-            else:
-                latest_prices[case_name] = None  # Jeśli brak danych, ustawiamy None
-
-        # Zapisujemy najnowsze ceny do latest_prices.json
-        with open(output_file, 'w') as f:
-            json.dump(latest_prices, f, indent=4)
-
-        print("✅ Zaktualizowano latest_prices.json!")
-
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"❌ Błąd: {e}")
+    get_latest_prices_for_all_cases(cases)
 

@@ -6,8 +6,8 @@
     <h2 class="mb-6">Dodaj skrzynie</h2>
     <form action="{{ url_for('main.user_chests') }}" method="POST">
         <div id="fields-container" class="row">
-            {% if form_data and form_data['case_code'] %}
-                {% for i in range(form_data['case_code']|length) %}
+            {% if user_cases_data %}
+                {% for i in range(user_cases_data|length) %}
                     {% include 'user_case_field.html' %}
                 {% endfor %}
             {% else %}
@@ -15,7 +15,7 @@
             {% endif %}
         </div>
 
-        <button type="button" class="btn btn-primary mt-4" id="add_button">Dodaj do tabeli</button>
+        <button type="submit" class="btn btn-primary mt-4">Dodaj</button>
         <button type="button" class="btn btn-primary mt-4" id="one_more_chest">Jeszcze jedna</button>
     </form>
 </div>
@@ -28,22 +28,34 @@
             <th>Ilość</th>
             <th>Wartość jednostkowa</th>
             <th>Łączna wartość</th>
+            <th>Netto</th>
+            <th>Zmiana (%)</th>
             <th>Akcje</th>
         </tr>
     </thead>
     <tbody id="priceTableBody">
         {% for case in user_cases %}
         <tr>
-            <td>{{ cases[case.case_code]['name'] }}</td>
+            <td>{{ case.name }}</td>
             <td>{{ case.quantity }}</td>
-            <td>{{ case_prices[case.case_code]|round(2) }} zł</td>
-            <td>{{ (case.quantity * case_prices[case.case_code])|round(2) }} zł</td>
+            <td>{{ case.unit_price }} zł</td>
+            <td>{{ case.total_price }} zł</td>
+            <td>{{ case.total_price_after_tax }} zł</td>
             <td>
-                <form action="{{ url_for('main.edit_chest', case_id=case.id) }}" method="POST" class="d-inline">
+                {% if case.change_percent  > 0 %}
+                    <span style="color: lightgreen;">+{{ case.change_percent  }}%</span>
+                {% elif case.change_percent  < 0 %}
+                    <span style="color: red;">{{ case.change_percent  }}%</span>
+                {% else %}
+                    <span>{{ case.change_percent  }}%</span>
+                {% endif %}
+            </td>
+            <td>
+                <form action="{{ url_for('main.edit_chest', case_id=case.id) }}" method="POST" class="d-inline edit-form">
                     <input type="number" name="new_quantity" value="{{ case.quantity }}" min="1" required>
                     <button type="submit" class="btn btn-warning btn-sm">Edytuj</button>
                 </form>
-                <form action="{{ url_for('main.delete_chest', case_id=case.id) }}" method="POST" class="d-inline">
+                <form action="{{ url_for('main.delete_chest', case_id=case.id) }}" method="POST" class="d-inline delete-form">
                     <button type="submit" class="btn btn-danger btn-sm">Usuń</button>
                 </form>
             </td>
@@ -52,7 +64,9 @@
     </tbody>
 </table>
 
-<h3>Łączna wartość: {{ total_value|round(2) }} zł</h3>
+<h3>Łączna wartość inwestycji: {{ total_value }} zł</h3>
+<h3>Łączna wartość inwestycji netto: {{ total_value_after_tax }} zł</h3>
+<h5>Podatek steam od wystawienia 5%, następnie podatek od gry 10%</h5>
 
 <script>
     var casesData = {{ cases | tojson }};

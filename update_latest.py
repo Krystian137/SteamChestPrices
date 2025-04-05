@@ -1,3 +1,0 @@
-from prices_data import get_latest_prices_for_all_cases, cases
-
-get_latest_prices_for_all_cases(cases)

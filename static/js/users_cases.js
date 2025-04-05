@@ -4,29 +4,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const fieldsContainer = document.getElementById("fields-container");
     const tableBody = document.getElementById("priceTableBody");
 
-    // Dodaje nowy wiersz formularza do wpisania danych
     if (addFieldButton) {
         addFieldButton.addEventListener("click", function () {
             const firstField = fieldsContainer.querySelector(".case-row");
             if (firstField) {
                 const newField = firstField.cloneNode(true);
 
-                // Czyszczenie wartości pól
                 newField.querySelector("select[name='case_code[]']").selectedIndex = 0;
                 newField.querySelector("input[name='quantity[]']").value = "";
-
-                // Dodanie obsługi usuwania
                 addRemoveEvent(newField);
-
                 fieldsContainer.appendChild(newField);
             }
         });
     }
 
-    // Przenosi dane z formularza do tabeli
     if (addToTableButton) {
         addToTableButton.addEventListener("click", function (event) {
-            event.preventDefault();  // Zapobiega przypadkowemu wysłaniu formularza
+            event.preventDefault();
 
             const rows = fieldsContainer.querySelectorAll(".case-row");
 
@@ -62,7 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Dodaje obsługę usuwania dla dynamicznych elementów
     function addRemoveEvent(element) {
         const removeButton = element.querySelector(".remove-btn");
         if (removeButton) {
@@ -72,7 +65,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Inicjalizacja usuwania dla istniejących elementów
     document.querySelectorAll(".case-row").forEach(addRemoveEvent);
 });
 

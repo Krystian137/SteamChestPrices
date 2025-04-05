@@ -19,7 +19,9 @@
     </form>
 
     {% if total_value is not none %}
-        <h4 class="mt-3 col-md-3 pt-3">Łączna wartość: {{ total_value }} zł</h4>
+        <h4 class="mt-3 pt-3">Łączna wartość: {{ total_value }} zł</h4>
+        <h4 class="mt-3 pt-3">Łączna wartość netto: {{ total_value_after_tax }}zł</h4>
+        <h5>Podatek steam od wystawienia 5%, następnie podatek od gry 10%</h5>
     {% endif %}
 </div>
 

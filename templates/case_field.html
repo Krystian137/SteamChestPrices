@@ -1,5 +1,4 @@
 <div class="row mb-3 align-items-center case-row">
-    <!-- Skrzynia (select) -->
     <div class="col-md-4">
         <select name="case_code[]" class="form-select" required>
             {% for chest_name, chest_info in cases.items() %}
@@ -10,12 +9,10 @@
         </select>
     </div>
 
-    <!-- Liczba skrzyń (input) -->
     <div class="col-md-2">
         <input type="number" name="quantity[]" class="form-control" min="1" required>
     </div>
 
-    <!-- Przycisk Usuń -->
     <div class="col-md-1 d-flex justify-content-center align-items-center">
         <button type="button" class="btn btn-danger remove-btn">Usuń</button>
     </div>

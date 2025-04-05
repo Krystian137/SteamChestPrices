@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const newFields = document.createElement('div');
         newFields.classList.add('row', 'mb-3', 'align-items-center', 'case-row');
 
-        // Select dla skrzyń
         const selectDiv = document.createElement('div');
         selectDiv.classList.add('col-md-4');
         const select = document.createElement('select');
@@ -21,7 +20,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         selectDiv.appendChild(select);
 
-        // Input dla ilości
         const inputDiv = document.createElement('div');
         inputDiv.classList.add('col-md-2');
         const input = document.createElement('input');
@@ -32,7 +30,6 @@ document.addEventListener("DOMContentLoaded", function () {
         input.required = true;
         inputDiv.appendChild(input);
 
-        // Przycisk Usuń
         const removeButtonDiv = document.createElement('div');
         removeButtonDiv.classList.add('col-md-1', 'd-flex', 'justify-content-center', 'align-items-center');
         const removeButton = document.createElement('button');
@@ -45,14 +42,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         removeButtonDiv.appendChild(removeButton);
 
-        // Dodanie nowych pól do kontenera
         newFields.appendChild(selectDiv);
         newFields.appendChild(inputDiv);
         newFields.appendChild(removeButtonDiv);
         container.appendChild(newFields);
     });
 
-    // Obsługa przycisków "Usuń" dla początkowych pól
     document.getElementById('fields-container').addEventListener('click', function (event) {
         if (event.target.classList.contains('remove-btn')) {
             event.target.closest('.case-row').remove();
