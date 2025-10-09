@@ -13,6 +13,11 @@
                                 <div class="card-body field_drab">
                                     <h5 class="card-title">{{ chest_name }}</h5>
                                     <p class="card-text">{{ chest_info['latest_price'] }}</p>
+                                    <p>
+                                        <span style="color: {{ 'green' if chest_info.change >= 0 else 'red' }}">
+                                            {{ chest_info.change }}%
+                                        </span>
+                                    </p>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="btn-group">
                                             <button type="button" class="btn btn-sm btn-outline-secondary text-light">Sprawdź</button>

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import json
-from prices_data import cases, load_data, load_latest_prices
+from prices_data import cases, load_data, load_latest_prices, value_change
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify
 from flask_login import login_user, login_required, current_user, logout_user
@@ -71,13 +71,22 @@ def search():
 @main.route('/')
 def home():
     latest_prices = load_latest_prices()
+    change = value_change(cases)
 
     for chest_name, chest_info in cases.items():
         latest_price = latest_prices.get(chest_name)
+        chest_change = change.get(chest_name)
         if latest_price is not None:
             chest_info['latest_price'] = f"{latest_price:.2f} zł"
         else:
             chest_info['latest_price'] = "Brak danych"
+
+        if chest_change and isinstance(chest_change, dict):
+            chest_info['change'] = chest_change['change']
+            chest_info['change_value'] = chest_change['change']
+        else:
+            chest_info['change'] = "—"
+            chest_info['change_value'] = None
 
     return render_template('home.html', cases=cases)
 
