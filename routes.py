@@ -70,25 +70,46 @@ def search():
 
 @main.route('/')
 def home():
+    sort_by = request.args.get('sort_by', 'price')  # domyślnie po cenie
+
     latest_prices = load_latest_prices()
     change = value_change(cases)
+
+    enriched_cases = []
 
     for chest_name, chest_info in cases.items():
         latest_price = latest_prices.get(chest_name)
         chest_change = change.get(chest_name)
+
+        chest_info = chest_info.copy()
+        chest_info['name'] = chest_name
+
         if latest_price is not None:
-            chest_info['latest_price'] = f"{latest_price:.2f} zł"
+            chest_info['latest_price'] = float(latest_price)
+            chest_info['latest_price_display'] = f"{latest_price:.2f} zł"
         else:
-            chest_info['latest_price'] = "Brak danych"
+            chest_info['latest_price'] = 0.0
+            chest_info['latest_price_display'] = "Brak danych"
 
         if chest_change and isinstance(chest_change, dict):
-            chest_info['change'] = chest_change['change']
-            chest_info['change_value'] = chest_change['change']
+            chest_info['change_value'] = float(chest_change['change'])
+            chest_info['change_display'] = f"{chest_change['change']:.2f}%"
         else:
-            chest_info['change'] = "—"
-            chest_info['change_value'] = None
+            chest_info['change_value'] = 0.0
+            chest_info['change_display'] = "—"
 
-    return render_template('home.html', cases=cases)
+        enriched_cases.append(chest_info)
+
+    if sort_by == 'price':
+        sorted_cases = sorted(enriched_cases, key=lambda x: -x['latest_price'])
+    elif sort_by == 'change':
+        sorted_cases = sorted(enriched_cases, key=lambda x: -x['change_value'])
+    elif sort_by == 'name':
+        sorted_cases = sorted(enriched_cases, key=lambda x: x['name'].lower())
+    else:
+        sorted_cases = enriched_cases
+
+    return render_template('home.html', cases=sorted_cases, sort_by=sort_by)
 
 
 @main.route("/chest_info/<string:case_code>")
