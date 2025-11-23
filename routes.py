@@ -70,6 +70,10 @@ def search():
 
 @main.route('/')
 def home():
+    sort_key = request.args.get('sort', 'name')
+    order = request.args.get('order', 'asc')
+    reverse = order == 'desc'
+
     latest_prices = load_latest_prices()
 
     for chest_name, chest_info in cases.items():
@@ -79,7 +83,20 @@ def home():
         else:
             chest_info['latest_price'] = "Brak danych"
 
-    return render_template('home.html', cases=cases)
+    cases_list = list(cases.items())
+
+    def sort_function(item):
+        name, info = item
+        if sort_key == "price":
+            return info.get('latest_price', 0.0)
+        elif sort_key == "change":
+            return info.get('percent_change', 0.0)
+        else:
+            return name.lower()
+
+    cases_list = sorted(cases_list, key=sort_function, reverse=reverse)
+
+    return render_template('home.html', cases=cases_list, current_sort=sort_key, current_order=order)
 
 
 @main.route("/chest_info/<string:case_code>")
