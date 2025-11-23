@@ -206,6 +206,37 @@ def get_latest_prices_for_all_cases(cases, prices_file="prices.json", output_fil
         print(f"❌ Błąd: {e}")
 
 
+def value_change(cases, prices_file="prices.json"):
+    try:
+        with open(prices_file, 'r') as f:
+            prices_data = json.load(f)
+
+        latest_prices = {}
+
+        for case_name, case_info in cases.items():
+            case_code = case_info["code"]
+
+            if case_code in prices_data and len(prices_data[case_code]) >= 2:
+                latest_price = prices_data[case_code][-1][1]
+                previous_price = prices_data[case_code][-2][1]
+                change = ((latest_price - previous_price) / previous_price) * 100
+
+                latest_prices[case_name] = {
+                    "latest": latest_price,
+                    "previous": previous_price,
+                    "change": round(change, 2)
+                }
+            else:
+                latest_prices[case_name] = None
+
+        return latest_prices
+
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"❌ Błąd: {e}")
+        return {}
+
+
+
 def update_prices(data):
     prices = data
     for case_name, case_data in cases.items():
