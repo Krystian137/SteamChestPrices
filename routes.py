@@ -79,9 +79,11 @@ def home():
     for chest_name, chest_info in cases.items():
         latest_price = latest_prices.get(chest_name)
         if latest_price is not None:
-            chest_info['latest_price'] = f"{latest_price:.2f} zł"
+            chest_info['latest_price'] = latest_price
+            chest_info['latest_price_str'] = f"{latest_price:.2f} zł"
         else:
-            chest_info['latest_price'] = "Brak danych"
+            chest_info['latest_price'] = 0.0
+            chest_info['latest_price_str'] = "Brak danych"
 
     cases_list = list(cases.items())
 
