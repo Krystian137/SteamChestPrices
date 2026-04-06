@@ -59,13 +59,38 @@ def register():
 
 @main.route('/search', methods=['POST'])
 def search():
-    query = request.form.get('query')
-    if query:
-        filtered_cases = {name: info for name, info in cases.items() if query.lower() in name.lower()}
-    else:
-        filtered_cases = {}
+    query = request.form.get('query', '')
+    latest_prices = load_latest_prices()
+    price_history = load_data()
 
-    return render_template('home.html', cases=filtered_cases, query=query)
+    if query:
+        filtered = {name: info for name, info in cases.items() if query.lower() in name.lower()}
+    else:
+        filtered = {}
+
+    for chest_name, chest_info in filtered.items():
+        latest_price = latest_prices.get(chest_name)
+        if latest_price is not None:
+            chest_info['latest_price'] = latest_price
+            chest_info['latest_price_str'] = f"{latest_price:.2f} zł"
+        else:
+            chest_info['latest_price'] = 0.0
+            chest_info['latest_price_str'] = "Brak danych"
+
+        case_code = chest_info["code"]
+        price_list = price_history.get(case_code, [])
+        if len(price_list) >= 2:
+            prev_price = price_list[-2][1]
+            curr_price = price_list[-1][1]
+            chest_info['percent_change'] = round(((curr_price - prev_price) / prev_price) * 100, 2) if prev_price else 0.0
+        else:
+            chest_info['percent_change'] = 0.0
+
+    # Zwróć jako listę krotek — tak samo jak home()
+    cases_list = list(filtered.items())
+
+    return render_template('home.html', cases=cases_list, query=query,
+                           current_sort='name', current_order='asc')
 
 
 @main.route('/')
@@ -75,6 +100,7 @@ def home():
     reverse = order == 'desc'
 
     latest_prices = load_latest_prices()
+    price_history = load_data()
 
     for chest_name, chest_info in cases.items():
         latest_price = latest_prices.get(chest_name)
@@ -84,6 +110,15 @@ def home():
         else:
             chest_info['latest_price'] = 0.0
             chest_info['latest_price_str'] = "Brak danych"
+
+        case_code = chest_info["code"]
+        price_list = price_history.get(case_code, [])
+        if len(price_list) >= 2:
+            prev_price = price_list[-2][1]
+            curr_price = price_list[-1][1]
+            chest_info['percent_change'] = round(((curr_price - prev_price) / prev_price) * 100, 2) if prev_price else 0.0
+        else:
+            chest_info['percent_change'] = 0.0
 
     cases_list = list(cases.items())
 

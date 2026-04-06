@@ -1,41 +1,92 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="album py-5">
+<div class="py-5">
     <div class="container">
-        <div class="mb-4 text-center">
-            <a href="/?sort=name&order={{ 'desc' if current_sort == 'name' and current_order == 'asc' else 'asc' }}"
-               class="btn btn-sm btn-outline-light mx-1">Sortuj po nazwie</a>
-            <a href="/?sort=price&order={{ 'desc' if current_sort == 'price' and current_order == 'asc' else 'asc' }}"
-               class="btn btn-sm btn-outline-light mx-1">Sortuj po cenie</a>
-            <a href="/?sort=change&order={{ 'desc' if current_sort == 'change' and current_order == 'asc' else 'asc' }}"
-               class="btn btn-sm btn-outline-light mx-1">Sortuj po zmianie %</a>
-        </div>
-        <div class="row">
-            {% if cases %}
-                {% for chest_name, chest_info in cases %}
-                    <div class="col-md-3">
-                        <a href="{{ url_for('main.chest_info', case_code=chest_info['code']) }}" class="text-decoration-none">
-                            <div class="card mb-3 box-shadow field_drab text-light">
-                                <img src="{{ chest_info.image }}" class="card-img-top" alt="{{ chest_name }}">
-                                <div class="card-body field_drab">
-                                    <h5 class="card-title">{{ chest_name }}</h5>
-                                    <p class="card-text">{{ chest_info['latest_price'] }} zł</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary text-light">Sprawdź</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
+
+        {# ── TOP GAINERS ── #}
+        {% set gainers = cases | selectattr('1.percent_change', 'defined') | sort(attribute='1.percent_change', reverse=True) | list %}
+        {% set top3 = gainers[:3] %}
+        {% if top3 %}
+        <div class="top-gainers-section">
+            <div class="section-label">🔥 Najlepsze dzisiaj</div>
+            <div class="section-title">Największe wzrosty</div>
+            <div class="row g-3">
+                {% for chest_name, chest_info in top3 %}
+                <div class="col-md-4">
+                    <a href="{{ url_for('main.chest_info', case_code=chest_info['code']) }}" class="gainer-card">
+                        <div class="gainer-card-rank">{{ loop.index }}</div>
+                        <img src="{{ chest_info.image }}" alt="{{ chest_name }}">
+                        <div class="gainer-card-info">
+                            <div class="gainer-card-name">{{ chest_name }}</div>
+                            <div class="gainer-card-price">{{ chest_info['latest_price_str'] }}</div>
+                        </div>
+                        {% if chest_info.percent_change is defined %}
+                            <div class="gainer-badge">+{{ "%.2f"|format(chest_info.percent_change) }}%</div>
+                        {% endif %}
+                    </a>
+                </div>
                 {% endfor %}
-            {% else %}
-                <p>Brak wyników dla "{{ query }}"</p>
-            {% endif %}
+            </div>
         </div>
+        <hr class="page-divider">
+        {% endif %}
+
+        {# ── SORT BAR ── #}
+        <div class="sort-bar">
+            <span class="sort-label">Sortuj:</span>
+            <a href="/?sort=name&order={{ 'desc' if current_sort == 'name' and current_order == 'asc' else 'asc' }}"
+               class="btn-sort {{ 'active' if current_sort == 'name' else '' }}">
+                Nazwa {% if current_sort == 'name' %}{{ '↑' if current_order == 'asc' else '↓' }}{% endif %}
+            </a>
+            <a href="/?sort=price&order={{ 'desc' if current_sort == 'price' and current_order == 'asc' else 'asc' }}"
+               class="btn-sort {{ 'active' if current_sort == 'price' else '' }}">
+                Cena {% if current_sort == 'price' %}{{ '↑' if current_order == 'asc' else '↓' }}{% endif %}
+            </a>
+            <a href="/?sort=change&order={{ 'desc' if current_sort == 'change' and current_order == 'asc' else 'asc' }}"
+               class="btn-sort {{ 'active' if current_sort == 'change' else '' }}">
+                Zmiana % {% if current_sort == 'change' %}{{ '↑' if current_order == 'asc' else '↓' }}{% endif %}
+            </a>
+        </div>
+
+        {# ── CASE GRID ── #}
+        {% if cases %}
+        <div class="case-grid">
+            {% for chest_name, chest_info in cases %}
+            <a href="{{ url_for('main.chest_info', case_code=chest_info['code']) }}" class="case-card">
+                <div class="case-card-img-wrap">
+                    <img src="{{ chest_info.image }}" alt="{{ chest_name }}">
+                </div>
+                <div class="case-card-body">
+                    <div class="case-card-name">{{ chest_name }}</div>
+                    <div class="case-card-footer">
+                        <div class="case-card-price">
+                            {{ chest_info['latest_price_str'] if chest_info['latest_price_str'] != 'Brak danych' else '—' }}
+                        </div>
+                        {% if chest_info.percent_change is defined %}
+                            {% set pct = chest_info.percent_change %}
+                            {% if pct > 0 %}
+                                <span class="change-badge change-up">+{{ "%.2f"|format(pct) }}%</span>
+                            {% elif pct < 0 %}
+                                <span class="change-badge change-down">{{ "%.2f"|format(pct) }}%</span>
+                            {% else %}
+                                <span class="change-badge change-neutral">0.00%</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="change-badge change-neutral">—</span>
+                        {% endif %}
+                    </div>
+                    <div class="mt-1">
+                        <span class="case-card-check">Sprawdź →</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">Brak wyników dla "{{ query }}"</div>
+        {% endif %}
+
     </div>
 </div>
-
 {% endblock %}

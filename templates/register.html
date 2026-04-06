@@ -1,24 +1,47 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-logo">CS2 Case Tracker</div>
+        <h1 class="auth-title">Rejestracja</h1>
+        <p class="auth-subtitle">Załóż konto i zacznij śledzić swoje skrzynie</p>
 
-<div class="d-flex align-items-center justify-content-center">
-    <main class="form-signin border rounded black-olive p-4 shadow">
-      <form method="POST">
-        <h1 class="h3 mb-3 fw-normal text-center">Rejestracja</h1>
-        <div class="form-floating mb-3 text-black">
-          <input type="text" class="form-control" id="floatingInput" placeholder="login" name="name" value="{{ request.form.name }}">
-          <label for="floatingInput">Login</label>
+        <form method="POST" novalidate>
+            <div class="auth-field">
+                <label class="auth-label" for="name">Login</label>
+                <input
+                    type="text"
+                    class="auth-input"
+                    id="name"
+                    name="name"
+                    placeholder="Wybierz login"
+                    value="{{ request.form.get('name', '') }}"
+                    autocomplete="username"
+                    required
+                >
+            </div>
+
+            <div class="auth-field">
+                <label class="auth-label" for="password">Hasło</label>
+                <input
+                    type="password"
+                    class="auth-input"
+                    id="password"
+                    name="password"
+                    placeholder="Minimum 8 znaków"
+                    autocomplete="new-password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="auth-btn">Zarejestruj się →</button>
+        </form>
+
+        <div class="auth-footer">
+            Masz już konto?&nbsp;
+            <a href="{{ url_for('main.login') }}">Zaloguj się</a>
         </div>
-
-        <div class="form-floating mb-3 text-black">
-          <input type="password" class="form-control" id="floatingPassword" placeholder="Hasło" name="password" value="{{ request.form.password }}">
-          <label for="floatingPassword">Hasło</label>
-        </div>
-
-        <button class="btn btn-primary w-100 py-2" type="submit">Zarejestruj się</button>
-      </form>
-    </main>
+    </div>
 </div>
-
 {% endblock %}

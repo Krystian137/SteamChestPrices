@@ -1,23 +1,777 @@
-.eerie-black {
-    background-color: #23231A;
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap');
+
+:root {
+    --bg-primary: #1a1a12;
+    --bg-secondary: #23231a;
+    --bg-card: #2a2818;
+    --bg-nav: #1e1d13;
+    --accent-olive: #988F2A;
+    --accent-orange: #FE5F00;
+    --accent-gold: #c9a227;
+    --text-primary: #f0ead6;
+    --text-muted: #a09878;
+    --border-subtle: rgba(152, 143, 42, 0.2);
+    --border-glow: rgba(152, 143, 42, 0.5);
+    --green: #4ade80;
+    --red: #f87171;
+    --shadow-card: 0 4px 24px rgba(0,0,0,0.5);
+    --shadow-hover: 0 8px 40px rgba(0,0,0,0.7);
 }
 
-.black-olive {
-    background-color: #322F20;
+* {
+    box-sizing: border-box;
 }
 
-.field_drab {
-    background-color: #6A5837;
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.6;
 }
 
-.olive {
-    background-color: #988F2A;
+/* ─── NOISE TEXTURE OVERLAY ─── */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    background-size: 200px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
 }
 
-.orange {
-    background-color: #FE5F00;
+/* ─── NAVBAR ─── */
+.navbar {
+    background-color: var(--bg-nav) !important;
+    border-bottom: 1px solid var(--border-subtle);
+    backdrop-filter: blur(12px);
+    padding: 0.75rem 0;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.navbar-brand {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent-olive) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.navbar-brand span {
+    color: var(--accent-orange);
+}
+
+.nav-link {
+    color: var(--text-muted) !important;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: color 0.2s;
+    padding: 0.5rem 0.9rem !important;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--text-primary) !important;
+}
+
+.form-control {
+    background-color: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+    background-color: rgba(255,255,255,0.07);
+    border-color: var(--accent-olive);
+    box-shadow: 0 0 0 2px rgba(152,143,42,0.2);
+    color: var(--text-primary);
+    outline: none;
+}
+
+/* ─── PAGE CONTAINER ─── */
+.container {
+    position: relative;
+    z-index: 1;
+}
+
+/* ─── TOP GAINERS SECTION ─── */
+.top-gainers-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent-orange);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--accent-orange), transparent);
+    opacity: 0.4;
+}
+
+.section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.02em;
+}
+
+/* ─── GAINER CARD (hero row) ─── */
+.gainer-card {
+    background: linear-gradient(135deg, #2e2b18 0%, #1e1c10 100%);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.gainer-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--accent-orange), var(--accent-olive));
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.gainer-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--border-glow);
+    color: inherit;
+    text-decoration: none;
+}
+
+.gainer-card:hover::before {
+    opacity: 1;
+}
+
+.gainer-card-rank {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: rgba(201, 162, 39, 0.2);
+    line-height: 1;
+    min-width: 2rem;
+}
+
+.gainer-card img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+    flex-shrink: 0;
+}
+
+.gainer-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.gainer-card-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-primary);
+}
+
+.gainer-card-price {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+.gainer-badge {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--green);
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.25);
+    border-radius: 6px;
+    padding: 0.25rem 0.6rem;
+    white-space: nowrap;
+}
+
+/* ─── SORT BAR ─── */
+.sort-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.sort-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+}
+
+.btn-sort {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.85rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.btn-sort:hover, .btn-sort.active {
+    background: var(--accent-olive);
+    border-color: var(--accent-olive);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* ─── CASE CARDS ─── */
+.case-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 1.25rem;
+}
+
+.case-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.case-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--border-glow);
+    color: inherit;
+    text-decoration: none;
+}
+
+.case-card-img-wrap {
+    background: linear-gradient(135deg, #2a2716 0%, #1c1b0e 100%);
+    padding: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.case-card-img-wrap img {
+    width: 100%;
+    max-width: 140px;
+    height: 100px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+    transition: transform 0.3s;
+}
+
+.case-card:hover .case-card-img-wrap img {
+    transform: scale(1.06);
+}
+
+.case-card-body {
+    padding: 0.9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex: 1;
+}
+
+.case-card-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.case-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 0.5rem;
+}
+
+.case-card-price {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--accent-gold);
+}
+
+.change-badge {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 5px;
+    letter-spacing: 0.02em;
+}
+
+.change-up {
+    color: var(--green);
+    background: rgba(74, 222, 128, 0.1);
+}
+
+.change-down {
+    color: var(--red);
+    background: rgba(248, 113, 113, 0.1);
+}
+
+.change-neutral {
+    color: var(--text-muted);
+    background: rgba(160,152,120,0.1);
+}
+
+.case-card-check {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    transition: all 0.2s;
+}
+
+.case-card:hover .case-card-check {
+    color: var(--accent-olive);
+    border-color: var(--accent-olive);
+}
+
+/* ─── PAGE HEADER DIVIDER ─── */
+.page-divider {
+    border: none;
+    border-top: 1px solid var(--border-subtle);
+    margin: 2rem 0;
+}
+
+/* ─── BUTTONS ─── */
+.btn-primary {
+    background: var(--accent-olive);
+    border-color: var(--accent-olive);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: 6px;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+    background: #7a7222;
+    border-color: #7a7222;
+    box-shadow: 0 0 15px rgba(152,143,42,0.3);
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: var(--accent-olive);
+    color: var(--text-primary);
+}
+
+/* ─── TABLES ─── */
+.table-dark {
+    --bs-table-bg: var(--bg-card);
+    --bs-table-striped-bg: rgba(255,255,255,0.03);
+    --bs-table-border-color: var(--border-subtle);
+    font-size: 0.88rem;
+}
+
+.table > :not(caption) > * > * {
+    padding: 0.75rem 1rem;
+}
+
+/* ─── FORMS (login/register) ─── */
+.form-signin {
+    max-width: 380px;
+    width: 100%;
+    background: var(--bg-card);
+    border-color: var(--border-subtle) !important;
+    border-radius: 14px;
+    margin-top: 5rem;
+}
+
+.form-signin h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+}
+
+.form-floating label {
+    color: var(--text-muted);
+}
+
+/* ─── CHEST INFO PAGE ─── */
+.border-bottom {
+    border-color: var(--border-subtle) !important;
+}
+
+.btn-outline-secondary {
+    border-color: var(--border-subtle);
+    color: var(--text-muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.btn-outline-secondary:hover {
+    background: var(--accent-olive);
+    border-color: var(--accent-olive);
+    color: #fff;
+}
+
+.dropdown-menu {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 0.4rem;
+}
+
+.dropdown-item {
+    color: var(--text-muted);
+    border-radius: 5px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.45rem 0.85rem;
+    transition: all 0.15s;
 }
 
 .dropdown-item:hover {
-    background-color: #FE5F00;
+    background-color: var(--accent-orange);
+    color: #fff;
+}
+
+/* ─── ALERTS ─── */
+.alert {
+    border-radius: 8px;
+    font-size: 0.88rem;
+}
+
+/* ─── USER CHESTS PAGE ─── */
+h2, h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+}
+
+/* ─── FORM SELECT ─── */
+.form-select {
+    background-color: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    border-radius: 6px;
+}
+
+.form-select:focus {
+    background-color: rgba(255,255,255,0.07);
+    border-color: var(--accent-olive);
+    box-shadow: 0 0 0 2px rgba(152,143,42,0.2);
+    color: var(--text-primary);
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.case-card, .gainer-card {
+    animation: fadeInUp 0.35s ease both;
+}
+
+.case-card:nth-child(1) { animation-delay: 0.03s; }
+.case-card:nth-child(2) { animation-delay: 0.06s; }
+.case-card:nth-child(3) { animation-delay: 0.09s; }
+.case-card:nth-child(4) { animation-delay: 0.12s; }
+.case-card:nth-child(5) { animation-delay: 0.15s; }
+.case-card:nth-child(6) { animation-delay: 0.18s; }
+.case-card:nth-child(7) { animation-delay: 0.21s; }
+.case-card:nth-child(8) { animation-delay: 0.24s; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+    .case-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.9rem;
+    }
+
+    .gainer-card-rank {
+        display: none;
+    }
+}
+
+/* ─── SELECT / OPTION DROPDOWN FIX ─── */
+/* Nadpisujemy natywne białe tło w dropdown opcji */
+select.form-select,
+select.form-select option {
+    background-color: #2a2818;
+    color: var(--text-primary);
+}
+
+/* Dla przeglądarek WebKit (Chrome/Edge) — panel listy */
+select.form-select:focus {
+    background-color: #2a2818;
+    border-color: var(--accent-olive);
+    color: var(--text-primary);
+}
+
+/* Firefox obsługuje background na option natywnie,
+   Chrome/Edge wymaga JS-owego selecta lub polegamy na OS-owym wyglądzie.
+   Poniższy trick wymusza ciemne tło tam gdzie jest wsparcie: */
+@supports (color-scheme: dark) {
+    select.form-select {
+        color-scheme: dark;
+    }
+}
+
+/* Dodatkowe wzmocnienie — każdy select na stronie */
+select {
+    background-color: #2a2818 !important;
+    color: var(--text-primary) !important;
+    color-scheme: dark;
+}
+
+select option {
+    background-color: #2a2818;
+    color: var(--text-primary);
+}
+
+select option:hover,
+select option:checked {
+    background-color: var(--accent-olive);
+    color: #fff;
+}
+
+/* ─── AUTH PAGES (login / register) ─── */
+.auth-wrapper {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 400px;
+    background: #23221a;
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtelna linia akcentu na górze karty */
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(to right, var(--accent-orange), var(--accent-olive));
+}
+
+.auth-logo {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent-olive);
+    text-align: center;
+    margin-bottom: 0.25rem;
+}
+
+.auth-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.04em;
+}
+
+.auth-subtitle {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 2rem;
+    letter-spacing: 0.02em;
+}
+
+.auth-field {
+    margin-bottom: 1.1rem;
+}
+
+.auth-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.auth-input {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    color: var(--text-primary);
+    padding: 0.65rem 0.9rem;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    outline: none;
+}
+
+.auth-input:focus {
+    border-color: var(--accent-olive);
+    background: rgba(255,255,255,0.07);
+    box-shadow: 0 0 0 3px rgba(152,143,42,0.15);
+}
+
+.auth-input::placeholder {
+    color: rgba(160,152,120,0.5);
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    background: var(--accent-olive);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+
+.auth-btn:hover {
+    background: #7a7222;
+    box-shadow: 0 0 20px rgba(152,143,42,0.3);
+    transform: translateY(-1px);
+}
+
+.auth-btn:active {
+    transform: translateY(0);
+}
+
+.auth-footer {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+.auth-footer a {
+    color: var(--accent-olive);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.auth-footer a:hover {
+    color: var(--accent-gold);
+}
+
+/* ─── SECRET KEY HINT (dla developera) ─── */
+.dev-hint {
+    background: rgba(254, 95, 0, 0.08);
+    border: 1px solid rgba(254, 95, 0, 0.3);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    color: var(--accent-orange);
+    margin-bottom: 1rem;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.03em;
 }
