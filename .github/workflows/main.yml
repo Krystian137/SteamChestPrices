@@ -3,6 +3,7 @@ name: Update Prices Daily
 on:
   schedule:
     - cron: '0 0 * * *'  # codziennie o północy UTC
+  workflow_dispatch:
 
 jobs:
   update:
@@ -24,13 +25,12 @@ jobs:
     - name: Run the update script
       run: python update.py
 
-    - name: Commit and push updated JSON files
+    - name: Commit and push updated database
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
-        git add prices.json latest_prices.json
+        git add app.db
         git commit -m "Daily price update $(date '+%Y-%m-%d')" || echo "No changes to commit"
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

@@ -580,30 +580,24 @@ h2, h3 {
 }
 
 /* ─── SELECT / OPTION DROPDOWN FIX ─── */
-/* Nadpisujemy natywne białe tło w dropdown opcji */
 select.form-select,
 select.form-select option {
     background-color: #2a2818;
     color: var(--text-primary);
 }
 
-/* Dla przeglądarek WebKit (Chrome/Edge) — panel listy */
 select.form-select:focus {
     background-color: #2a2818;
     border-color: var(--accent-olive);
     color: var(--text-primary);
 }
 
-/* Firefox obsługuje background na option natywnie,
-   Chrome/Edge wymaga JS-owego selecta lub polegamy na OS-owym wyglądzie.
-   Poniższy trick wymusza ciemne tło tam gdzie jest wsparcie: */
 @supports (color-scheme: dark) {
     select.form-select {
         color-scheme: dark;
     }
 }
 
-/* Dodatkowe wzmocnienie — każdy select na stronie */
 select {
     background-color: #2a2818 !important;
     color: var(--text-primary) !important;
@@ -763,7 +757,6 @@ select option:checked {
     color: var(--accent-gold);
 }
 
-/* ─── SECRET KEY HINT (dla developera) ─── */
 .dev-hint {
     background: rgba(254, 95, 0, 0.08);
     border: 1px solid rgba(254, 95, 0, 0.3);

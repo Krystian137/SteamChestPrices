@@ -21,3 +21,39 @@ class UserCase(db.Model):
     case_code = Column(String(100))
     quantity = Column(Integer)
 
+
+class Case(db.Model):
+    __tablename__ = "cases"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    market_code = db.Column(db.String(200), unique=True, nullable=False)
+    image_url = db.Column(db.String(500))
+
+    prices = db.relationship(
+        "PriceEntry",
+        back_populates="case",
+        order_by="PriceEntry.recorded_at",
+        cascade="all, delete-orphan",
+    )
+
+    def __repr__(self):
+        return f"<Case {self.name}>"
+
+
+class PriceEntry(db.Model):
+    __tablename__ = "price_entries"
+
+    id = db.Column(db.Integer, primary_key=True)
+    case_id = db.Column(db.Integer, db.ForeignKey("cases.id"), nullable=False, index=True)
+    recorded_at = db.Column(db.DateTime, nullable=False, index=True)
+    price = db.Column(db.Numeric(10, 3), nullable=False)
+
+    case = db.relationship("Case", back_populates="prices")
+
+    __table_args__ = (
+        db.UniqueConstraint("case_id", "recorded_at", name="uq_case_date"),
+    )
+
+    def __repr__(self):
+        return f"<PriceEntry {self.case_id} {self.recorded_at:%Y-%m-%d} {self.price}>"

@@ -2,8 +2,10 @@ import requests
 import json
 import os
 import time
-import datetime
+from datetime import datetime
+import logging
 import urllib.parse
+from models import Case, PriceEntry, db
 #https://github.com/Revadike/InternalSteamWebAPI/wiki
 
 FILENAME = "prices.json"
@@ -11,6 +13,10 @@ LATEST_PRICES_FILE = "latest_prices.json"
 
 PRICE_URL = "http://steamcommunity.com/market/priceoverview/?appid=730&currency=6&market_hash_name="
 PRICE_HISTORY_URL = "https://steamcommunity.com/market/pricehistory?appid=730&market_hash_name="
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
+
 
 cases = {
     "Gamma Case": {
@@ -236,32 +242,60 @@ def value_change(cases, prices_file="prices.json"):
         return {}
 
 
+def get_or_create_case(name: str, info: dict) -> Case:
+    case = Case.query.filter_by(market_code=info["code"]).first()
+    if case is None:
+        case = Case(name=name, market_code=info["code"], image_url=info.get("image"))
+        db.session.add(case)
+        db.session.flush()
+    return case
 
-def update_prices(data):
-    prices = data
-    for case_name, case_data in cases.items():
-        market_code = case_data['code']
+
+def update_prices_in_db():
+    updated = 0
+    failed = 0
+
+    for name, info in cases.items():
+        market_code = info["code"]
         url = PRICE_URL + market_code
-        print(f"Przetwarzam skrzynkę: {case_name} ({market_code})")
-        try:
-            response = requests.get(url)
-            data = response.json()
-            if data and 'lowest_price' in data:
-                lowest_price = data['lowest_price']
-                cleaned_price = lowest_price.replace('zł', '').replace(',', '.').strip()
-                today = time.strftime("%b %d %Y %H: +0")
-                prices[market_code].append([today, float(cleaned_price)])
-                print(f"Zaktualizowano {case_name}: {cleaned_price} zł")
-            else:
-                print(f"Nie znaleziono ceny dla {case_name}.")
-        except Exception as e:
-            print(f"Błąd podczas aktualizacji {case_name}: {e}")
+        logger.info("Przetwarzam skrzynkę: %s (%s)", name, market_code)
 
+        try:
+            response = requests.get(url, timeout=10)
+            data = response.json()
+        except Exception as e:
+            logger.error("Błąd zapytania dla %s: %s", name, e)
+            failed += 1
+            time.sleep(3)
+            continue
+
+        if not data or "lowest_price" not in data:
+            logger.warning("Brak ceny dla %s — pomijam", name)
+            failed += 1
+            time.sleep(3)
+            continue
+
+        try:
+            cleaned_price = data["lowest_price"].replace("zł", "").replace(",", ".").strip()
+            price = float(cleaned_price)
+        except (ValueError, AttributeError) as e:
+            logger.error("Nie udało się sparsować ceny dla %s: %s", name, e)
+            failed += 1
+            time.sleep(3)
+            continue
+
+        case = get_or_create_case(name, info)
+        now = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+
+        existing = PriceEntry.query.filter_by(case_id=case.id, recorded_at=now).first()
+        if existing:
+            existing.price = price
+        else:
+            db.session.add(PriceEntry(case_id=case.id, recorded_at=now, price=price))
+
+        updated += 1
+        logger.info("Zaktualizowano %s: %s zł", name, price)
         time.sleep(3)
 
-    with open('prices.json', 'w') as file:
-        json.dump(prices, file, indent=4)
-
-    print("Aktualizacja pliku prices.json zakończona.")
-
-    get_latest_prices_for_all_cases(cases)
+    db.session.commit()
+    logger.info("Aktualizacja zakończona. OK: %d, błędy: %d", updated, failed)

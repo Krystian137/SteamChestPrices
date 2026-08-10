@@ -1,10 +1,14 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import json
+import csv
+import io
 from prices_data import cases, load_data, load_latest_prices
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify
 from flask_login import login_user, login_required, current_user, logout_user
-from models import db, User, UserCase
+from models import db, User, UserCase, Case, PriceEntry
+from flask import Response
+from analytics import top_movers, most_volatile, all_time_extremes, market_index
 
 main = Blueprint('main', __name__)
 
@@ -86,7 +90,6 @@ def search():
         else:
             chest_info['percent_change'] = 0.0
 
-    # Zwróć jako listę krotek — tak samo jak home()
     cases_list = list(filtered.items())
 
     return render_template('home.html', cases=cases_list, query=query,
@@ -309,3 +312,88 @@ def delete_chest(case_id):
     db.session.commit()
     flash("Skrzynia usunięta!", "success")
     return redirect(url_for('main.user_chests'))
+
+
+@main.route("/data")
+def data():
+    period_days = request.args.get("period", 365, type=int)
+
+    context = {
+        "gainers": top_movers(days=period_days, limit=5, direction="gainers"),
+        "losers": top_movers(days=period_days, limit=5, direction="losers"),
+        "volatile": most_volatile(days=period_days, limit=5),
+        "extremes": all_time_extremes(),
+        "index_series": market_index(days=period_days),
+        "period_days": period_days,
+    }
+    return render_template("data.html", **context)
+
+
+@main.route("/data/export.csv")
+def export_csv():
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["case_name", "market_code", "date", "price_pln"])
+
+    rows = (
+        db.session.query(Case.name, Case.market_code, PriceEntry.recorded_at, PriceEntry.price)
+        .join(PriceEntry, PriceEntry.case_id == Case.id)
+        .order_by(Case.name, PriceEntry.recorded_at)
+    )
+    for name, code, date, price in rows:
+        writer.writerow([name, code, date.strftime("%Y-%m-%d %H:%M"), price])
+
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=cs2_case_prices.csv"},
+    )
+
+
+@main.route("/data/export.json")
+def export_json():
+    rows = (
+        db.session.query(Case.name, Case.market_code, PriceEntry.recorded_at, PriceEntry.price)
+        .join(PriceEntry, PriceEntry.case_id == Case.id)
+        .order_by(Case.name, PriceEntry.recorded_at)
+    )
+
+    grouped: dict[str, list] = {}
+    for name, code, date, price in rows:
+        grouped.setdefault(name, {"market_code": code, "history": []})
+        grouped[name]["history"].append(
+            {"date": date.strftime("%Y-%m-%d %H:%M"), "price": float(price)}
+        )
+
+    return jsonify(grouped)
+
+
+@main.route("/api/cases")
+def api_cases():
+    cases = Case.query.order_by(Case.name).all()
+    return jsonify([
+        {"name": c.name, "market_code": c.market_code, "image_url": c.image_url}
+        for c in cases
+    ])
+
+
+@main.route("/api/cases/<string:market_code>/prices")
+def api_case_prices(market_code):
+    period = request.args.get("period", "year")  # week / month / year / all
+    days_map = {"week": 7, "month": 30, "year": 365, "all": None}
+    days = days_map.get(period, 365)
+
+    case = Case.query.filter_by(market_code=market_code).first()
+    if case is None:
+        return jsonify({"error": "Nie znaleziono skrzynki"}), 404
+
+    query = PriceEntry.query.filter_by(case_id=case.id).order_by(PriceEntry.recorded_at)
+    if days is not None:
+        from datetime import datetime, timedelta
+        cutoff = datetime.utcnow() - timedelta(days=days)
+        query = query.filter(PriceEntry.recorded_at >= cutoff)
+
+    return jsonify([
+        {"date": e.recorded_at.strftime("%Y-%m-%d %H:%M"), "price": float(e.price)}
+        for e in query.all()
+    ])

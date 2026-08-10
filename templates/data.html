@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Dane i analityka — CS2 Case Tracker{% endblock %}
+
+{% block content %}
+<div class="data-page">
+    <h2 class="data-title">Dane i analityka</h2>
+    <p class="data-description">
+        Pełne dane historyczne cen skrzynek do pobrania, oraz szybki przegląd rynku
+        za ostatni okres.
+    </p>
+
+    <!-- ─── SELEKTOR OKRESU ─── -->
+    <div class="sort-bar mt-3 mb-4">
+        <span class="sort-label">Okres:</span>
+        <a href="{{ url_for('main.data', period=30) }}"
+           class="btn-sort {{ 'active' if period_days == 30 }}">Miesiąc</a>
+        <a href="{{ url_for('main.data', period=90) }}"
+           class="btn-sort {{ 'active' if period_days == 90 }}">Kwartał</a>
+        <a href="{{ url_for('main.data', period=365) }}"
+           class="btn-sort {{ 'active' if period_days == 365 }}">Rok</a>
+    </div>
+
+    <!-- ─── EKSPORT ─── -->
+    <div class="mb-5">
+        <div class="section-label">Eksport</div>
+        <a href="{{ url_for('main.export_csv') }}" class="btn btn-primary me-2">Pobierz CSV</a>
+        <a href="{{ url_for('main.export_json') }}" class="btn btn-secondary me-2">Pobierz JSON</a>
+        <a href="{{ url_for('main.api_cases') }}" class="btn btn-secondary">Zobacz API</a>
+    </div>
+
+    <!-- ─── TOP GAINERS / LOSERS ─── -->
+    <div class="row">
+        <div class="col-md-6 top-gainers-section">
+            <div class="section-label">Rosnące</div>
+            <h3 class="section-title">Top 5 — najszybszy wzrost</h3>
+            {% for m in gainers %}
+            <div class="gainer-card mb-2">
+                <div class="gainer-card-rank">{{ loop.index }}</div>
+                <img src="{{ m.image_url }}" alt="{{ m.case_name }}">
+                <div class="gainer-card-info">
+                    <div class="gainer-card-name">{{ m.case_name }}</div>
+                    <div class="gainer-card-price">{{ m.start_price }} zł &rarr; {{ m.end_price }} zł</div>
+                </div>
+                <div class="gainer-badge">+{{ m.change_pct }}%</div>
+            </div>
+            {% else %}
+            <p class="text-muted">Brak wystarczających danych w tym okresie.</p>
+            {% endfor %}
+        </div>
+
+        <div class="col-md-6 top-gainers-section">
+            <div class="section-label">Spadające</div>
+            <h3 class="section-title">Top 5 — najszybszy spadek</h3>
+            {% for m in losers %}
+            <div class="gainer-card mb-2">
+                <div class="gainer-card-rank">{{ loop.index }}</div>
+                <img src="{{ m.image_url }}" alt="{{ m.case_name }}">
+                <div class="gainer-card-info">
+                    <div class="gainer-card-name">{{ m.case_name }}</div>
+                    <div class="gainer-card-price">{{ m.start_price }} zł &rarr; {{ m.end_price }} zł</div>
+                </div>
+                <div class="gainer-badge" style="color:var(--red); background:rgba(248,113,113,0.1); border-color:rgba(248,113,113,0.25);">
+                    {{ m.change_pct }}%
+                </div>
+            </div>
+            {% else %}
+            <p class="text-muted">Brak wystarczających danych w tym okresie.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <hr class="page-divider">
+
+    <!-- ─── INDEKS RYNKU ─── -->
+    <div class="top-gainers-section">
+        <div class="section-label">Trend</div>
+        <h3 class="section-title">Indeks rynku skrzynek (baza = 100)</h3>
+        <canvas id="marketIndexChart" height="90"></canvas>
+    </div>
+
+    <hr class="page-divider">
+
+    <!-- ─── NAJBARDZIEJ ZMIENNE ─── -->
+    <div class="top-gainers-section">
+        <div class="section-label">Zmienność</div>
+        <h3 class="section-title">Najbardziej niestabilne ceny</h3>
+        <table class="table table-dark table-striped">
+            <thead>
+                <tr>
+                    <th>Skrzynka</th>
+                    <th>Śr. cena</th>
+                    <th>Zmienność (odch. std. / śr.)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in volatile %}
+                <tr>
+                    <td>{{ v.case_name }}</td>
+                    <td>{{ v.avg_price }} zł</td>
+                    <td>{{ v.volatility_pct }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ─── ATH / ATL ─── -->
+    <div class="top-gainers-section">
+        <div class="section-label">Rekordy</div>
+        <h3 class="section-title">All-time high / low</h3>
+        <table class="table table-dark table-striped">
+            <thead>
+                <tr>
+                    <th>Skrzynka</th>
+                    <th>Najwyższa cena</th>
+                    <th>Najniższa cena</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in extremes %}
+                <tr>
+                    <td>{{ e.case_name }}</td>
+                    <td>{{ e.ath }} zł</td>
+                    <td>{{ e.atl }} zł</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ─── MIEJSCE NA TABLEAU (opcjonalnie) ─── -->
+    <div class="top-gainers-section">
+        <div class="section-label">Tableau</div>
+        <h3 class="section-title">Dashboard analityczny</h3>
+        <iframe src="https://public.tableau.com/views/TWOJ_WORKBOOK/Dashboard1?:embed=y&:showVizHome=no"
+                width="100%" height="600" style="border:none;"></iframe>
+    </div>
+</div>
+
+<script>
+const indexData = {{ index_series | tojson }};
+
+const ctx = document.getElementById('marketIndexChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: indexData.map(d => d.date),
+        datasets: [{
+            label: 'Indeks rynku',
+            data: indexData.map(d => d.index),
+            borderColor: '#988F2A',
+            backgroundColor: 'rgba(152,143,42,0.1)',
+            tension: 0.25,
+            fill: true,
+            pointRadius: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            x: { ticks: { color: '#a09878', maxTicksLimit: 10 }, grid: { color: 'rgba(152,143,42,0.1)' } },
+            y: { ticks: { color: '#a09878' }, grid: { color: 'rgba(152,143,42,0.1)' } }
+        },
+        plugins: { legend: { labels: { color: '#f0ead6' } } }
+    }
+});
+</script>
+{% endblock %}
